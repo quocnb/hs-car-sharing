@@ -1,0 +1,12 @@
+type: hyperskill
+title: Car Sharing
+language: English
+summary: "<p>During the project implementation, you will learn the basics of SQL and\
+  \ work with the H2 database.\_You will also learn about advanced Java features such\
+  \ as Collections.</p><br/><br/>Learn more at <a href=\"https://hyperskill.org/projects/140?utm_source=ide&utm_medium=ide&utm_campaign=ide&utm_content=project-card\"\
+  >https://hyperskill.org/projects/140</a>"
+programming_language: Java
+programming_language_version: 11
+content:
+  - Car Sharing
+mode: Study
