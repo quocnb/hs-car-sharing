@@ -1,55 +1,88 @@
 package carsharing;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class H2DatabaseHelper {
     static final String JDBC_DRIVER = "org.h2.Driver";
-    static String DB_URL = "jdbc:h2:./src/carsharing/db/carsharing";
+    static final String DB_URL = "jdbc:h2:./src/carsharing/db/";
 
-    public static void setDbFileName(String dbFileName) {
+    private Connection connection;
+    public H2DatabaseHelper(String dbFileName) {
         if (dbFileName == null || dbFileName.isEmpty()) {
             dbFileName = "carsharing";
         }
-        DB_URL = String.format("jdbc:h2:./src/carsharing/db/%s", dbFileName);
-    }
-
-    public static void connectAndExecuteSql(List<String> sqlList) {
-        Connection conn = null;
-        Statement stmt = null;
+        String dbnUrl = DB_URL + dbFileName;
         try {
-            // STEP 1: Register JDBC driver
             Class.forName(JDBC_DRIVER);
 
             //STEP 2: Open a connection
-            conn = DriverManager.getConnection(DB_URL,"","");
-            conn.setAutoCommit(true);
-            //STEP 3: Execute a query
-            stmt = conn.createStatement();
+            connection = DriverManager.getConnection(dbnUrl,"","");
+            connection.setAutoCommit(true);
+            migrate();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public List<Company> getAllCompanies() {
+        List<Company> result = new ArrayList<>();
+        try {
+            Statement stmt = connection.createStatement();
+            String sql = "SELECT * FROM COMPANY ORDER BY ID;";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            // STEP 4: Extract data from result set
+            while(rs.next()) {
+                // Retrieve by column name
+                int id  = rs.getInt("ID");
+                String name = rs.getString("NAME");
+                result.add(new Company(id, name));
+            }
+            rs.close();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        return result;
+    }
+
+    public void addNewCompany(String name) {
+        try {
+            String sql = SqlGenerate.INSERT_COMPANY;
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            stmt.setString(1, name);
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    private void migrate() {
+        List<String> sqlList = List.of(SqlGenerate.CREATE_TBL_COMPANY);
+        executeSql(sqlList);
+    }
+
+    private void executeSql(List<String> sqlList) {
+        Statement stmt = null;
+        try {
+            // Execute sql list
+            stmt = connection.createStatement();
             for (String sql: sqlList) {
                 stmt.executeUpdate(sql);
             }
-
-            // STEP 4: Clean-up environment
+            // Close statement
             stmt.close();
-            conn.close();
         } catch(Exception e) {
             System.err.println(e.getMessage());
         } finally {
-            //finally block used to close resources
-            try{
-                if(stmt!=null) stmt.close();
+            // Clean up
+            try {
+                if (stmt!=null) stmt.close();
             } catch(SQLException se2) {
                 System.err.println(se2.getMessage());
             }
-            try {
-                if(conn!=null) conn.close();
-            } catch(SQLException se){
-                System.err.println(se.getMessage());
-            }
         }
     }
+
 }

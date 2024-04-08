@@ -347,6 +347,87 @@ files:
           }
       }
     learner_created: false
+  - name: src/carsharing/H2DatabaseHelper.java
+    visible: true
+    text: |
+      package carsharing;
+      
+      import java.sql.Connection;
+      import java.sql.DriverManager;
+      import java.sql.SQLException;
+      import java.sql.Statement;
+      import java.util.List;
+      
+      public class H2DatabaseHelper {
+          static final String JDBC_DRIVER = "org.h2.Driver";
+          static String DB_URL = "jdbc:h2:./src/carsharing/db/carsharing";
+      
+          public static void setDbFileName(String dbFileName) {
+              if (dbFileName == null || dbFileName.isEmpty()) {
+                  dbFileName = "carsharing";
+              }
+              DB_URL = String.format("jdbc:h2:./src/carsharing/db/%s", dbFileName);
+          }
+      
+          public static void connectAndExecuteSql(List<String> sqlList) {
+              Connection conn = null;
+              Statement stmt = null;
+              try {
+                  // STEP 1: Register JDBC driver
+                  Class.forName(JDBC_DRIVER);
+      
+                  //STEP 2: Open a connection
+                  conn = DriverManager.getConnection(DB_URL,"","");
+                  conn.setAutoCommit(true);
+                  //STEP 3: Execute a query
+                  stmt = conn.createStatement();
+                  for (String sql: sqlList) {
+                      stmt.executeUpdate(sql);
+                  }
+      
+                  // STEP 4: Clean-up environment
+                  stmt.close();
+                  conn.close();
+              } catch(Exception e) {
+                  System.err.println(e.getMessage());
+              } finally {
+                  //finally block used to close resources
+                  try{
+                      if(stmt!=null) stmt.close();
+                  } catch(SQLException se2) {
+                      System.err.println(se2.getMessage());
+                  }
+                  try {
+                      if(conn!=null) conn.close();
+                  } catch(SQLException se){
+                      System.err.println(se.getMessage());
+                  }
+              }
+          }
+      }
+    learner_created: true
+  - name: src/carsharing/SqlGenerate.java
+    visible: true
+    text: |
+      package carsharing;
+      
+      public class SqlGenerate {
+          public static String CREATE_TBL_COMPANY = "CREATE TABLE COMPANY (ID int NOT NULL, NAME VARCHAR(255))";
+      }
+    learner_created: true
+  - name: src/carsharing/db/carsharing.trace.db
+    visible: true
+    text: |
+      2024-04-08 14:04:33 jdbc[3]: exception
+      org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "COMPANY" already exists; SQL statement:
+      CREATE TABLE COMPANY (ID int NOT NULL, NAME VARCHAR(255)) [42101-200]
+    learner_created: true
+  - name: src/carsharing/Company.java
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/140/stages/759/implement#comment
-status: Unchecked
-record: -1
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Mon, 08 Apr 2024 11:24:10 UTC"
+record: 2
