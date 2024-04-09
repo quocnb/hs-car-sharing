@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.198s</div>
+<div class="counter">0.258s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">start</td>
-<td class="success">0.198s</td>
+<td class="success">0.258s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -90,19 +90,27 @@
 <pre>?[1;31m
 Start test 1?[0m
 1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
 0. Exit
 &gt; 0
 ?[1;31m
 Start test 2?[0m
 1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
 0. Exit
 &gt; 1
+
 
 1. Company list
 2. Create a company
 0. Back
 &gt; 0
+
 1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
 0. Exit
 ?[1;31m
 Start test 3?[0m
@@ -113,8 +121,11 @@ Start test 5?[0m
 ?[1;31m
 Start test 6?[0m
 1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
 0. Exit
 &gt; 1
+
 
 1. Company list
 2. Create a company
@@ -137,7 +148,7 @@ The company was created!
 0. Back
 &gt; 1
 
-Choose the company:
+Choose a company:
 1. Super company
 0. Back
 &gt; 0
@@ -165,12 +176,13 @@ The company was created!
 0. Back
 &gt; 1
 
-Choose the company:
+Choose a company:
 1. Super company
 2. Another company
 3. One more company
 0. Back
 &gt; 2
+
 
 'Another company' company
 1. Car list
@@ -179,8 +191,11 @@ Choose the company:
 ?[1;31m
 Start test 7?[0m
 1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
 0. Exit
 &gt; 1
+
 
 1. Company list
 2. Create a company
@@ -205,11 +220,12 @@ The company was created!
 0. Back
 &gt; 1
 
-Choose the company:
+Choose a company:
 1. Car To Go
 2. Drive Now
 0. Back
 &gt; 1
+
 
 'Car To Go' company
 1. Car list
@@ -256,11 +272,12 @@ Car list:
 0. Back
 &gt; 1
 
-Choose the company:
+Choose a company:
 1. Car To Go
 2. Drive Now
 0. Back
 &gt; 2
+
 
 'Drive Now' company
 1. Car list
@@ -296,7 +313,224 @@ Car list:
 2. Create a company
 0. Back
 &gt; 0
+
 1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 0
+?[1;31m
+Start test 8?[0m
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 2
+
+The customer list is empty!
+
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 3
+
+Enter the customer name:
+&gt; First customer
+The customer was added!
+
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 3
+
+Enter the customer name:
+&gt; Second customer
+The customer was added!
+
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 2
+
+Customer list:
+1. First customer
+2. Second customer
+0. Back
+&gt; 1
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 3
+
+You didn't rent a car!
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 2
+
+You didn't rent a car!
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+?[1;31m
+Start test 9?[0m
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 2
+
+Customer list:
+1. First customer
+2. Second customer
+0. Back
+&gt; 1
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 1
+
+Choose a company:
+1. Car To Go
+2. Drive Now
+0. Back
+&gt; 1
+
+Choose a car:
+1. Hyundai Venue
+2. Maruti Suzuki Dzire
+0. Back
+&gt; 1
+
+You rented 'Hyundai Venue'
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 3
+
+Your rented car:
+Hyundai Venue
+Company:
+Car To Go
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 1
+
+You've already rented a car!
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 2
+
+You've returned a rented car!
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 0
+
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 0
+?[1;31m
+Start test 10?[0m
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 2
+
+Customer list:
+1. First customer
+2. Second customer
+0. Back
+&gt; 2
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 1
+
+Choose a company:
+1. Car To Go
+2. Drive Now
+0. Back
+&gt; 1
+
+Choose a car:
+1. Hyundai Venue
+2. Maruti Suzuki Dzire
+0. Back
+&gt; 1
+
+You rented 'Hyundai Venue'
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 0
+
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
+0. Exit
+&gt; 2
+
+Customer list:
+1. First customer
+2. Second customer
+0. Back
+&gt; 1
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 1
+
+Choose a company:
+1. Car To Go
+2. Drive Now
+0. Back
+&gt; 1
+
+Choose a car:
+1. Maruti Suzuki Dzire
+0. Back
+&gt; 0
+
+1. Rent a car
+2. Return a rented car
+3. My rented car
+0. Back
+&gt; 0
+
+1. Log in as a manager
+2. Log in as a customer
+3. Create a customer
 0. Exit
 &gt; 0
 </pre>
@@ -310,7 +544,7 @@ Car list:
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 7.6</a> at Apr 9, 2024, 5:53:56 PM</p>
+<a href="http://www.gradle.org">Gradle 7.6</a> at Apr 9, 2024, 9:19:25 PM</p>
 </div>
 </div>
 </body>
