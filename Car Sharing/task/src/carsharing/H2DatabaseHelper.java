@@ -26,14 +26,14 @@ public class H2DatabaseHelper {
         }
     }
 
+    //region Company
     public List<Company> getAllCompanies() {
         List<Company> result = new ArrayList<>();
         try {
             Statement stmt = connection.createStatement();
-            String sql = "SELECT * FROM COMPANY ORDER BY ID;";
-            ResultSet rs = stmt.executeQuery(sql);
+            ResultSet rs = stmt.executeQuery(SqlGenerate.SELECT_TBL_COMPANY);
 
-            // STEP 4: Extract data from result set
+            // Extract data from result set
             while(rs.next()) {
                 // Retrieve by column name
                 int id  = rs.getInt("ID");
@@ -57,9 +57,48 @@ public class H2DatabaseHelper {
             System.err.println(e.getMessage());
         }
     }
+    //endregion
+
+    //region Cars
+    public List<Car> getAllCars(Company company) {
+        List<Car> result = new ArrayList<>();
+        try {
+            PreparedStatement stmt = connection.prepareStatement(SqlGenerate.SELECT_TBL_CAR);
+            stmt.setInt(1, company.id());
+            ResultSet rs = stmt.executeQuery();
+
+            // Extract data from result set
+            while(rs.next()) {
+                // Retrieve by column name
+                int id  = rs.getInt("ID");
+                String name = rs.getString("NAME");
+                int companyId = rs.getInt("COMPANY_ID");
+                result.add(new Car(id, name, companyId));
+            }
+            rs.close();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        return result;
+    }
+
+    public void addNewCar(String name, Company company) {
+        try {
+            PreparedStatement stmt = connection.prepareStatement(SqlGenerate.INSERT_CAR);
+            stmt.setString(1, name);
+            stmt.setInt(2, company.id());
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+    }
+    //endregion
 
     private void migrate() {
-        List<String> sqlList = List.of(SqlGenerate.CREATE_TBL_COMPANY);
+        List<String> sqlList = List.of(
+                SqlGenerate.CREATE_TBL_COMPANY,
+                SqlGenerate.CREATE_TBL_CAR
+                );
         executeSql(sqlList);
     }
 

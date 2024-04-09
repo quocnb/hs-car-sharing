@@ -567,6 +567,416 @@ files:
           }
       }
     learner_created: false
+  - name: src/carsharing/Car.java
+    visible: true
+    text: |
+      package carsharing;
+      
+      public record Car(int id, String name, int companyId) {
+      }
+    learner_created: true
+  - name: src/carsharing/Company.java
+    visible: true
+    text: |
+      package carsharing;
+      
+      public record Company(int id, String name) {
+      }
+    learner_created: true
+  - name: src/carsharing/H2DatabaseHelper.java
+    visible: true
+    text: |
+      package carsharing;
+      
+      import java.sql.*;
+      import java.util.ArrayList;
+      import java.util.List;
+      
+      public class H2DatabaseHelper {
+          static final String JDBC_DRIVER = "org.h2.Driver";
+          static final String DB_URL = "jdbc:h2:./src/carsharing/db/";
+      
+          private Connection connection;
+          public H2DatabaseHelper(String dbFileName) {
+              if (dbFileName == null || dbFileName.isEmpty()) {
+                  dbFileName = "carsharing";
+              }
+              String dbnUrl = DB_URL + dbFileName;
+              try {
+                  Class.forName(JDBC_DRIVER);
+      
+                  //STEP 2: Open a connection
+                  connection = DriverManager.getConnection(dbnUrl,"","");
+                  connection.setAutoCommit(true);
+                  migrate();
+              } catch (Exception e) {
+                  System.err.println(e.getMessage());
+              }
+          }
+      
+          //region Company
+          public List<Company> getAllCompanies() {
+              List<Company> result = new ArrayList<>();
+              try {
+                  Statement stmt = connection.createStatement();
+                  ResultSet rs = stmt.executeQuery(SqlGenerate.SELECT_TBL_COMPANY);
+      
+                  // Extract data from result set
+                  while(rs.next()) {
+                      // Retrieve by column name
+                      int id  = rs.getInt("ID");
+                      String name = rs.getString("NAME");
+                      result.add(new Company(id, name));
+                  }
+                  rs.close();
+              } catch (Exception e) {
+                  System.err.println(e.getMessage());
+              }
+              return result;
+          }
+      
+          public void addNewCompany(String name) {
+              try {
+                  String sql = SqlGenerate.INSERT_COMPANY;
+                  PreparedStatement stmt = connection.prepareStatement(sql);
+                  stmt.setString(1, name);
+                  stmt.executeUpdate();
+              } catch (Exception e) {
+                  System.err.println(e.getMessage());
+              }
+          }
+          //endregion
+      
+          //region Cars
+          public List<Car> getAllCars(Company company) {
+              List<Car> result = new ArrayList<>();
+              try {
+                  PreparedStatement stmt = connection.prepareStatement(SqlGenerate.SELECT_TBL_CAR);
+                  stmt.setInt(1, company.id());
+                  ResultSet rs = stmt.executeQuery();
+      
+                  // Extract data from result set
+                  while(rs.next()) {
+                      // Retrieve by column name
+                      int id  = rs.getInt("ID");
+                      String name = rs.getString("NAME");
+                      int companyId = rs.getInt("COMPANY_ID");
+                      result.add(new Car(id, name, companyId));
+                  }
+                  rs.close();
+              } catch (Exception e) {
+                  System.err.println(e.getMessage());
+              }
+              return result;
+          }
+      
+          public void addNewCar(String name, Company company) {
+              try {
+                  PreparedStatement stmt = connection.prepareStatement(SqlGenerate.INSERT_CAR);
+                  stmt.setString(1, name);
+                  stmt.setInt(2, company.id());
+                  stmt.executeUpdate();
+              } catch (Exception e) {
+                  System.err.println(e.getMessage());
+              }
+          }
+          //endregion
+      
+          private void migrate() {
+              List<String> sqlList = List.of(
+                      SqlGenerate.CREATE_TBL_COMPANY,
+                      SqlGenerate.CREATE_TBL_CAR
+                      );
+              executeSql(sqlList);
+          }
+      
+          private void executeSql(List<String> sqlList) {
+              Statement stmt = null;
+              try {
+                  // Execute sql list
+                  stmt = connection.createStatement();
+                  for (String sql: sqlList) {
+                      stmt.executeUpdate(sql);
+                  }
+                  // Close statement
+                  stmt.close();
+              } catch(Exception e) {
+                  System.err.println(e.getMessage());
+              } finally {
+                  // Clean up
+                  try {
+                      if (stmt!=null) stmt.close();
+                  } catch(SQLException se2) {
+                      System.err.println(se2.getMessage());
+                  }
+              }
+          }
+      
+      }
+    learner_created: true
+  - name: src/carsharing/SqlGenerate.java
+    visible: true
+    text: |
+      package carsharing;
+      
+      public class SqlGenerate {
+          public static String CREATE_TBL_COMPANY = """
+                  CREATE TABLE IF NOT EXISTS COMPANY (
+                    ID int NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                    NAME VARCHAR(255) NOT NULL UNIQUE
+                  )""";
+          public static String CREATE_TBL_CAR = """
+                  CREATE TABLE IF NOT EXISTS CAR (
+                    ID INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\s
+                    NAME VARCHAR(255) NOT NULL UNIQUE,\s
+                    COMPANY_ID INT NOT NULL,\s
+                    FOREIGN KEY (COMPANY_ID) REFERENCES COMPANY(ID)
+                  )""";
+          public static String SELECT_TBL_COMPANY = "SELECT * FROM COMPANY ORDER BY ID";
+          public static String SELECT_TBL_CAR = "SELECT * FROM CAR WHERE COMPANY_ID = ? ORDER BY ID";
+          public static String INSERT_COMPANY = "INSERT INTO COMPANY (NAME) VALUES (?)";
+          public static String INSERT_CAR = "INSERT INTO CAR (NAME) VALUES (?)";
+      }
+    learner_created: true
+  - name: src/carsharing/db/carsharing.trace.db
+    visible: true
+    text: "2024-04-08 14:04:33 jdbc[3]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException:\
+    \ Table \"COMPANY\" already exists; SQL statement:\nCREATE TABLE COMPANY (ID int\
+    \ NOT NULL, NAME VARCHAR(255)) [42101-200]\n2024-04-08 19:59:55 jdbc[3]: exception\n\
+    org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"ALTER\
+    \ TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT PRIMARY[*]\
+    \ KEY\"; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT\
+    \ NULL AUTO_INCREMENT PRIMARY KEY [42000-200]\n2024-04-08 19:59:55 jdbc[4]: exception\n\
+    org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"ALTER\
+    \ TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT PRIMARY[*]\
+    \ KEY\"; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT\
+    \ NULL AUTO_INCREMENT PRIMARY KEY [42000-200]\n2024-04-08 20:01:58 jdbc[3]: exception\n\
+    org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"ALTER\
+    \ TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT IDENTITY[*]\"\
+    ; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT\
+    \ IDENTITY [42000-200]\n2024-04-08 20:01:58 jdbc[4]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException:\
+    \ Syntax error in SQL statement \"ALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID\
+    \ INT NOT NULL AUTO_INCREMENT IDENTITY[*]\"; SQL statement:\nALTER TABLE IF EXISTS\
+    \ COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT IDENTITY [42000-200]\n2024-04-08\
+    \ 20:03:03 jdbc[3]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax\
+    \ error in SQL statement \"ALTER TABLE IF EXISTS COMPANY ADD CONSTRAINT PK_ID\
+    \ PRIMARYKEY[*](ID);\"; expected \"., COMMENT, PRIMARY, INDEX, KEY, CHECK, UNIQUE,\
+    \ FOREIGN\"; SQL statement:\nALTER TABLE IF EXISTS COMPANY ADD CONSTRAINT pk_id\
+    \ PRIMARYKEY(ID); [42001-200]\n2024-04-08 20:03:03 jdbc[4]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException:\
+    \ Syntax error in SQL statement \"ALTER TABLE IF EXISTS COMPANY ADD CONSTRAINT\
+    \ PK_ID PRIMARYKEY[*](ID);\"; expected \"., COMMENT, PRIMARY, INDEX, KEY, CHECK,\
+    \ UNIQUE, FOREIGN\"; SQL statement:\nALTER TABLE IF EXISTS COMPANY ADD CONSTRAINT\
+    \ pk_id PRIMARYKEY(ID); [42001-200]\n2024-04-08 20:03:32 jdbc[3]: exception\n\
+    org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"ALTER\
+    \ TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT PRIMARYKEY[*]\"\
+    ; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT\
+    \ PRIMARYKEY [42000-200]\n2024-04-08 20:03:32 jdbc[4]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException:\
+    \ Syntax error in SQL statement \"ALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID\
+    \ INT NOT NULL AUTO_INCREMENT PRIMARYKEY[*]\"; SQL statement:\nALTER TABLE IF\
+    \ EXISTS COMPANY ALTER COLUMN ID INT NOT NULL AUTO_INCREMENT PRIMARYKEY [42000-200]\n\
+    2024-04-08 20:08:12 jdbc[3]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException:\
+    \ Syntax error in SQL statement \"ALTER TABLE IF EXISTS COMPANY ALTER COLUMN NAME\
+    \ VARCHAR(255) NOT NULL UNIQUE[*]\"; SQL statement:\nALTER TABLE IF EXISTS COMPANY\
+    \ ALTER COLUMN NAME VARCHAR(255) NOT NULL UNIQUE [42000-200]\n2024-04-08 20:08:12\
+    \ jdbc[4]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Attempt to define\
+    \ a second primary key; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN\
+    \ ID INT NOT NULL IDENTITY [90017-200]\n\tat org.h2.message.DbException.getJdbcSQLException(DbException.java:576)\n\
+    \tat org.h2.message.DbException.getJdbcSQLException(DbException.java:429)\n\t\
+    at org.h2.message.DbException.get(DbException.java:205)\n\tat org.h2.message.DbException.get(DbException.java:181)\n\
+    \tat org.h2.message.DbException.get(DbException.java:170)\n\tat org.h2.command.ddl.AlterTableAddConstraint.tryUpdate(AlterTableAddConstraint.java:129)\n\
+    \tat org.h2.command.ddl.AlterTableAddConstraint.update(AlterTableAddConstraint.java:78)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.execute(AlterTableAlterColumn.java:587)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.cloneTableStructure(AlterTableAlterColumn.java:489)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:301)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:289)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.update(AlterTableAlterColumn.java:195)\n\
+    \tat org.h2.command.CommandContainer.update(CommandContainer.java:198)\n\tat org.h2.command.Command.executeUpdate(Command.java:251)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:168)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:126)\n\tat carsharing.H2DatabaseHelper.executeSql(H2DatabaseHelper.java:74)\n\
+    \tat carsharing.H2DatabaseHelper.migrate(H2DatabaseHelper.java:65)\n\tat carsharing.H2DatabaseHelper.<init>(H2DatabaseHelper.java:23)\n\
+    \tat carsharing.Main.main(Main.java:12)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native\
+    \ Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\
+    \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\
+    \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.invokeMain(MainMethodExecutor.java:160)\n\
+    \tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.lambda$launch$1(MainMethodExecutor.java:188)\n\
+    \tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\
+    \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat\
+    \ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\
+    \tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\
+    \tat java.base/java.lang.Thread.run(Thread.java:840)\n2024-04-08 20:12:07 jdbc[3]:\
+    \ exception\norg.h2.jdbc.JdbcSQLNonTransientException: Unknown data type: \"PRIMARYKEY\"\
+    ; SQL statement:\nALTER TABLE IF EXISTS COMPANY ADD name_unique PRIMARYKEY(name)\
+    \ [50004-200]\n\tat org.h2.message.DbException.getJdbcSQLException(DbException.java:505)\n\
+    \tat org.h2.message.DbException.getJdbcSQLException(DbException.java:429)\n\t\
+    at org.h2.message.DbException.get(DbException.java:205)\n\tat org.h2.message.DbException.get(DbException.java:181)\n\
+    \tat org.h2.command.Parser.parseColumnWithType(Parser.java:5971)\n\tat org.h2.command.Parser.parseColumnForTable(Parser.java:5697)\n\
+    \tat org.h2.command.Parser.parseTableColumnDefinition(Parser.java:8442)\n\tat\
+    \ org.h2.command.Parser.parseAlterTableAddColumn(Parser.java:8133)\n\tat org.h2.command.Parser.parseAlterTable(Parser.java:7690)\n\
+    \tat org.h2.command.Parser.parseAlter(Parser.java:6983)\n\tat org.h2.command.Parser.parsePrepared(Parser.java:887)\n\
+    \tat org.h2.command.Parser.parse(Parser.java:843)\n\tat org.h2.command.Parser.parse(Parser.java:815)\n\
+    \tat org.h2.command.Parser.prepareCommand(Parser.java:738)\n\tat org.h2.engine.Session.prepareLocal(Session.java:657)\n\
+    \tat org.h2.engine.Session.prepareCommand(Session.java:595)\n\tat org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1235)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:164)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:126)\n\tat carsharing.H2DatabaseHelper.executeSql(H2DatabaseHelper.java:75)\n\
+    \tat carsharing.H2DatabaseHelper.migrate(H2DatabaseHelper.java:66)\n\tat carsharing.H2DatabaseHelper.<init>(H2DatabaseHelper.java:23)\n\
+    \tat carsharing.Main.main(Main.java:12)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native\
+    \ Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\
+    \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\
+    \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.invokeMain(MainMethodExecutor.java:160)\n\
+    \tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.lambda$launch$1(MainMethodExecutor.java:188)\n\
+    \tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\
+    \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat\
+    \ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\
+    \tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\
+    \tat java.base/java.lang.Thread.run(Thread.java:840)\n2024-04-08 20:12:07 jdbc[4]:\
+    \ exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Attempt to define a second\
+    \ primary key; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT\
+    \ NOT NULL IDENTITY [90017-200]\n\tat org.h2.message.DbException.getJdbcSQLException(DbException.java:576)\n\
+    \tat org.h2.message.DbException.getJdbcSQLException(DbException.java:429)\n\t\
+    at org.h2.message.DbException.get(DbException.java:205)\n\tat org.h2.message.DbException.get(DbException.java:181)\n\
+    \tat org.h2.message.DbException.get(DbException.java:170)\n\tat org.h2.command.ddl.AlterTableAddConstraint.tryUpdate(AlterTableAddConstraint.java:129)\n\
+    \tat org.h2.command.ddl.AlterTableAddConstraint.update(AlterTableAddConstraint.java:78)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.execute(AlterTableAlterColumn.java:587)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.cloneTableStructure(AlterTableAlterColumn.java:489)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:301)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:289)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.update(AlterTableAlterColumn.java:195)\n\
+    \tat org.h2.command.CommandContainer.update(CommandContainer.java:198)\n\tat org.h2.command.Command.executeUpdate(Command.java:251)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:168)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:126)\n\tat carsharing.H2DatabaseHelper.executeSql(H2DatabaseHelper.java:75)\n\
+    \tat carsharing.H2DatabaseHelper.migrate(H2DatabaseHelper.java:66)\n\tat carsharing.H2DatabaseHelper.<init>(H2DatabaseHelper.java:23)\n\
+    \tat carsharing.Main.main(Main.java:12)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native\
+    \ Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\
+    \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\
+    \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.invokeMain(MainMethodExecutor.java:160)\n\
+    \tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.lambda$launch$1(MainMethodExecutor.java:188)\n\
+    \tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\
+    \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat\
+    \ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\
+    \tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\
+    \tat java.base/java.lang.Thread.run(Thread.java:840)\n2024-04-08 20:14:07 jdbc[4]:\
+    \ exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Attempt to define a second\
+    \ primary key; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT\
+    \ NOT NULL IDENTITY [90017-200]\n\tat org.h2.message.DbException.getJdbcSQLException(DbException.java:576)\n\
+    \tat org.h2.message.DbException.getJdbcSQLException(DbException.java:429)\n\t\
+    at org.h2.message.DbException.get(DbException.java:205)\n\tat org.h2.message.DbException.get(DbException.java:181)\n\
+    \tat org.h2.message.DbException.get(DbException.java:170)\n\tat org.h2.command.ddl.AlterTableAddConstraint.tryUpdate(AlterTableAddConstraint.java:129)\n\
+    \tat org.h2.command.ddl.AlterTableAddConstraint.update(AlterTableAddConstraint.java:78)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.execute(AlterTableAlterColumn.java:587)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.cloneTableStructure(AlterTableAlterColumn.java:489)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:301)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:289)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.update(AlterTableAlterColumn.java:195)\n\
+    \tat org.h2.command.CommandContainer.update(CommandContainer.java:198)\n\tat org.h2.command.Command.executeUpdate(Command.java:251)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:168)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:126)\n\tat carsharing.H2DatabaseHelper.executeSql(H2DatabaseHelper.java:75)\n\
+    \tat carsharing.H2DatabaseHelper.migrate(H2DatabaseHelper.java:66)\n\tat carsharing.H2DatabaseHelper.<init>(H2DatabaseHelper.java:23)\n\
+    \tat carsharing.Main.main(Main.java:12)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native\
+    \ Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\
+    \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\
+    \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.invokeMain(MainMethodExecutor.java:160)\n\
+    \tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.lambda$launch$1(MainMethodExecutor.java:188)\n\
+    \tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\
+    \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat\
+    \ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\
+    \tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\
+    \tat java.base/java.lang.Thread.run(Thread.java:840)\n2024-04-08 20:14:07 jdbc[8]:\
+    \ exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Attempt to define a second\
+    \ primary key; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT\
+    \ NOT NULL IDENTITY [90017-200]\n\tat org.h2.message.DbException.getJdbcSQLException(DbException.java:576)\n\
+    \tat org.h2.message.DbException.getJdbcSQLException(DbException.java:429)\n\t\
+    at org.h2.message.DbException.get(DbException.java:205)\n\tat org.h2.message.DbException.get(DbException.java:181)\n\
+    \tat org.h2.message.DbException.get(DbException.java:170)\n\tat org.h2.command.ddl.AlterTableAddConstraint.tryUpdate(AlterTableAddConstraint.java:129)\n\
+    \tat org.h2.command.ddl.AlterTableAddConstraint.update(AlterTableAddConstraint.java:78)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.execute(AlterTableAlterColumn.java:587)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.cloneTableStructure(AlterTableAlterColumn.java:489)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:301)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:289)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.update(AlterTableAlterColumn.java:195)\n\
+    \tat org.h2.command.CommandContainer.update(CommandContainer.java:198)\n\tat org.h2.command.Command.executeUpdate(Command.java:251)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:168)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:126)\n\tat carsharing.H2DatabaseHelper.executeSql(H2DatabaseHelper.java:75)\n\
+    \tat carsharing.H2DatabaseHelper.migrate(H2DatabaseHelper.java:66)\n\tat carsharing.H2DatabaseHelper.<init>(H2DatabaseHelper.java:23)\n\
+    \tat carsharing.Main.main(Main.java:12)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native\
+    \ Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\
+    \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\
+    \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.invokeMain(MainMethodExecutor.java:160)\n\
+    \tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.lambda$launch$1(MainMethodExecutor.java:188)\n\
+    \tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\
+    \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat\
+    \ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\
+    \tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\
+    \tat java.base/java.lang.Thread.run(Thread.java:840)\n2024-04-08 20:21:45 jdbc[3]:\
+    \ exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement\
+    \ \"ALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL IDENTITY PRIMARY[*]\
+    \ KEY\"; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT\
+    \ NULL IDENTITY PRIMARY KEY [42000-200]\n2024-04-08 20:21:45 jdbc[4]: exception\n\
+    org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"ALTER\
+    \ TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL IDENTITY PRIMARY[*] KEY\"\
+    ; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL IDENTITY\
+    \ PRIMARY KEY [42000-200]\n2024-04-08 20:22:03 jdbc[4]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException:\
+    \ Attempt to define a second primary key; SQL statement:\nALTER TABLE IF EXISTS\
+    \ COMPANY ALTER COLUMN ID INT NOT NULL IDENTITY [90017-200]\n\tat org.h2.message.DbException.getJdbcSQLException(DbException.java:576)\n\
+    \tat org.h2.message.DbException.getJdbcSQLException(DbException.java:429)\n\t\
+    at org.h2.message.DbException.get(DbException.java:205)\n\tat org.h2.message.DbException.get(DbException.java:181)\n\
+    \tat org.h2.message.DbException.get(DbException.java:170)\n\tat org.h2.command.ddl.AlterTableAddConstraint.tryUpdate(AlterTableAddConstraint.java:129)\n\
+    \tat org.h2.command.ddl.AlterTableAddConstraint.update(AlterTableAddConstraint.java:78)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.execute(AlterTableAlterColumn.java:587)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.cloneTableStructure(AlterTableAlterColumn.java:489)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:301)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:289)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.update(AlterTableAlterColumn.java:195)\n\
+    \tat org.h2.command.CommandContainer.update(CommandContainer.java:198)\n\tat org.h2.command.Command.executeUpdate(Command.java:251)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:168)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:126)\n\tat carsharing.H2DatabaseHelper.executeSql(H2DatabaseHelper.java:75)\n\
+    \tat carsharing.H2DatabaseHelper.migrate(H2DatabaseHelper.java:66)\n\tat carsharing.H2DatabaseHelper.<init>(H2DatabaseHelper.java:23)\n\
+    \tat carsharing.Main.main(Main.java:12)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native\
+    \ Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\
+    \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\
+    \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.invokeMain(MainMethodExecutor.java:160)\n\
+    \tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.lambda$launch$1(MainMethodExecutor.java:188)\n\
+    \tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\
+    \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat\
+    \ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\
+    \tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\
+    \tat java.base/java.lang.Thread.run(Thread.java:840)\n2024-04-08 20:22:03 jdbc[8]:\
+    \ exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Attempt to define a second\
+    \ primary key; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT\
+    \ NOT NULL IDENTITY [90017-200]\n\tat org.h2.message.DbException.getJdbcSQLException(DbException.java:576)\n\
+    \tat org.h2.message.DbException.getJdbcSQLException(DbException.java:429)\n\t\
+    at org.h2.message.DbException.get(DbException.java:205)\n\tat org.h2.message.DbException.get(DbException.java:181)\n\
+    \tat org.h2.message.DbException.get(DbException.java:170)\n\tat org.h2.command.ddl.AlterTableAddConstraint.tryUpdate(AlterTableAddConstraint.java:129)\n\
+    \tat org.h2.command.ddl.AlterTableAddConstraint.update(AlterTableAddConstraint.java:78)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.execute(AlterTableAlterColumn.java:587)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.cloneTableStructure(AlterTableAlterColumn.java:489)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:301)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.copyData(AlterTableAlterColumn.java:289)\n\
+    \tat org.h2.command.ddl.AlterTableAlterColumn.update(AlterTableAlterColumn.java:195)\n\
+    \tat org.h2.command.CommandContainer.update(CommandContainer.java:198)\n\tat org.h2.command.Command.executeUpdate(Command.java:251)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdateInternal(JdbcStatement.java:168)\n\
+    \tat org.h2.jdbc.JdbcStatement.executeUpdate(JdbcStatement.java:126)\n\tat carsharing.H2DatabaseHelper.executeSql(H2DatabaseHelper.java:75)\n\
+    \tat carsharing.H2DatabaseHelper.migrate(H2DatabaseHelper.java:66)\n\tat carsharing.H2DatabaseHelper.<init>(H2DatabaseHelper.java:23)\n\
+    \tat carsharing.Main.main(Main.java:12)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native\
+    \ Method)\n\tat java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)\n\
+    \tat java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\
+    \tat java.base/java.lang.reflect.Method.invoke(Method.java:568)\n\tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.invokeMain(MainMethodExecutor.java:160)\n\
+    \tat org.hyperskill.hstest.testing.execution.MainMethodExecutor.lambda$launch$1(MainMethodExecutor.java:188)\n\
+    \tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)\n\
+    \tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)\n\tat\
+    \ java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\
+    \tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\
+    \tat java.base/java.lang.Thread.run(Thread.java:840)\n2024-04-08 20:22:23 jdbc[3]:\
+    \ exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement\
+    \ \"ALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL IDENTITY AUTO_INCREMENT[*]\"\
+    ; SQL statement:\nALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID INT NOT NULL IDENTITY\
+    \ auto_increment [42000-200]\n2024-04-08 20:22:23 jdbc[4]: exception\norg.h2.jdbc.JdbcSQLSyntaxErrorException:\
+    \ Syntax error in SQL statement \"ALTER TABLE IF EXISTS COMPANY ALTER COLUMN ID\
+    \ INT NOT NULL IDENTITY AUTO_INCREMENT[*]\"; SQL statement:\nALTER TABLE IF EXISTS\
+    \ COMPANY ALTER COLUMN ID INT NOT NULL IDENTITY auto_increment [42000-200]\n"
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/140/stages/760/implement#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: "Tue, 09 Apr 2024 08:53:56 UTC"
 record: -1

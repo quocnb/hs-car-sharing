@@ -1,0 +1,12 @@
+2024-04-09 16:55:50 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Invalid value "2" for parameter "parameterIndex" [90008-200]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:590)
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:429)
+	at org.h2.message.DbException.get(DbException.java:205)
+	at org.h2.message.DbException.getInvalidValueException(DbException.java:280)
+	at org.h2.jdbc.JdbcPreparedStatement.setParameter(JdbcPreparedStatement.java:1503)
+	at org.h2.jdbc.JdbcPreparedStatement.setInt(JdbcPreparedStatement.java:394)
+	at carsharing.H2DatabaseHelper.addNewCar(H2DatabaseHelper.java:89)
+	at carsharing.Main.carMode(Main.java:105)
+	at carsharing.Main.companyMode(Main.java:73)
+	at carsharing.Main.main(Main.java:38)

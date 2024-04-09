@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="CarSharingTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-04-08T11:24:09" hostname="Quocs-MBP16.local" time="0.166">
+<testsuite name="CarSharingTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-04-09T08:53:56" hostname="Quocs-MBP16.local" time="0.198">
   <properties/>
-  <testcase name="start" classname="CarSharingTest" time="0.166"/>
+  <testcase name="start" classname="CarSharingTest" time="0.198"/>
   <system-out><![CDATA[?[1;31m
 Start test 1?[0m
 1. Log in as a manager
@@ -45,13 +45,18 @@ The company list is empty!
 
 Enter the company name:
 > Super company
+The company was created!
 
 1. Company list
 2. Create a company
 0. Back
 > 1
 
+Choose the company:
 1. Super company
+0. Back
+> 0
+
 1. Company list
 2. Create a company
 0. Back
@@ -59,6 +64,7 @@ Enter the company name:
 
 Enter the company name:
 > Another company
+The company was created!
 
 1. Company list
 2. Create a company
@@ -67,13 +73,140 @@ Enter the company name:
 
 Enter the company name:
 > One more company
+The company was created!
 
 1. Company list
 2. Create a company
 0. Back
 > 1
 
-1. Super company2. Another company3. One more company
+Choose the company:
+1. Super company
+2. Another company
+3. One more company
+0. Back
+> 2
+
+'Another company' company
+1. Car list
+2. Create a car
+0. Back
+?[1;31m
+Start test 7?[0m
+1. Log in as a manager
+0. Exit
+> 1
+
+1. Company list
+2. Create a company
+0. Back
+> 2
+
+Enter the company name:
+> Car To Go
+The company was created!
+
+1. Company list
+2. Create a company
+0. Back
+> 2
+
+Enter the company name:
+> Drive Now
+The company was created!
+
+1. Company list
+2. Create a company
+0. Back
+> 1
+
+Choose the company:
+1. Car To Go
+2. Drive Now
+0. Back
+> 1
+
+'Car To Go' company
+1. Car list
+2. Create a car
+0. Back
+> 1
+
+The car list is empty!
+
+1. Car list
+2. Create a car
+0. Back
+> 2
+
+Enter the car name:
+> Hyundai Venue
+The car was added!
+
+1. Car list
+2. Create a car
+0. Back
+> 2
+
+Enter the car name:
+> Maruti Suzuki Dzire
+The car was added!
+
+1. Car list
+2. Create a car
+0. Back
+> 1
+
+Car list:
+1. Hyundai Venue
+2. Maruti Suzuki Dzire
+
+1. Car list
+2. Create a car
+0. Back
+> 0
+
+1. Company list
+2. Create a company
+0. Back
+> 1
+
+Choose the company:
+1. Car To Go
+2. Drive Now
+0. Back
+> 2
+
+'Drive Now' company
+1. Car list
+2. Create a car
+0. Back
+> 1
+
+The car list is empty!
+
+1. Car list
+2. Create a car
+0. Back
+> 2
+
+Enter the car name:
+> Lamborghini Urraco
+The car was added!
+
+1. Car list
+2. Create a car
+0. Back
+> 1
+
+Car list:
+1. Lamborghini Urraco
+
+1. Car list
+2. Create a car
+0. Back
+> 0
+
 1. Company list
 2. Create a company
 0. Back

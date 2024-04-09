@@ -425,6 +425,9 @@ files:
   - name: src/carsharing/Company.java
     visible: true
     learner_created: true
+  - name: src/carsharing/Car.java
+    visible: true
+    learner_created: true
 feedback_link: https://hyperskill.org/projects/140/stages/759/implement#comment
 status: Solved
 feedback:
